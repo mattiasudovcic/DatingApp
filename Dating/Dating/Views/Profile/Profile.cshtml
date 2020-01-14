@@ -1,0 +1,93 @@
+﻿@model Dating.Models.ProfileViewModel
+@using Dating.Common.Models;
+@using Microsoft.AspNet.Identity
+@using Dating.Helpers;
+@{
+	ViewBag.Title = "Index";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+	var isMyProfile = User.Identity.GetUserId() == Model.Profile.UserId.ToString();
+}
+
+<div class="row" style="margin-top:7%">
+	<div class="col-lg-12">
+		@Html.Partial("_ProfileInformation", Model.Profile)
+	</div>
+</div>
+<div class="row">
+	<div class="col-lg-3">
+		@if (isMyProfile)
+		{
+			@Html.Partial("_FriendProfiles", Model.Friends)
+		}
+	</div>
+	<div class="col-lg-1"></div>
+	<div class="col-lg-4">
+		@if (isMyProfile || ViewBag.IsFriend)
+		{
+			@Html.Partial("_Posts", Model.Posts)
+		}
+	</div>
+	<div class="col-lg-1"></div>
+	@if (isMyProfile)
+	{
+		<div class="col-lg-3">
+			<div>
+				<div class="row">
+					<div class="row jumbotron">
+						<div class="col-lg-12">
+							<h3>Last visitors</h3>
+							<div id="lastVisitors"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	}
+</div>
+
+	<script type="text/javascript">
+	var urlLastVisitors = '@Html.Raw(ActionHelper.LAST_VISITORS)';
+	if ('@isMyProfile' === '@true') {
+		
+		loadLastVisitors();
+	}
+
+	function loadLastVisitors() {
+
+            $.get(urlLastVisitors,
+				function (data) {
+						var visitorsHtml = "";
+						data.forEach(function (friend, i) {
+
+							var row =
+								"<div class=\"row\">" +
+								"<div class=\"col-lg-12\">";
+								if (friend.ImagePath != null)
+								{
+
+									row +="<div class=\"form-group\" style=\"float:left\">"+
+											"<img id=\"image_preview\" type=\"image\" src="+friend.ImagePath +" style=\"height:50px;width:50px;border-radius: 50%; outline: none; margin-right:3px\" alt=\"MyProfilePhoto\">"+
+										"	<div style=\"float:right;padding-top: 10%;\">" + "<a href=\"/Profile/ViewProfile?profileId="+ friend.Id +"\">"+ friend.FirstName + " " + friend.LastName+ "</a>" +
+									"</div>" +
+										"</div>";
+								}
+								else
+								{
+									row +="<div class=\"form-group\" style=\"float:left\">"+
+											"<img id=\"image_preview\" type=\"image\" src=\"/Content/Images/imageUndefined.png\" style=\"height:50px;width:50px;border-radius: 50%; outline: none; margin-right:3px\" alt=\"MyProfilePhoto\">"+
+										"	<div style=\"float:right;padding-top: 10%;\">" + "<a href=\"/Profile/ViewProfile?profileId="+ friend.Id +"\">"+ friend.FirstName + " " + friend.LastName+ "</a>" +
+									"</div>" +
+										"</div>";
+								}
+							row += "</div>" +
+										"</div>";
+							visitorsHtml += row;
+
+						});
+					
+							$('#lastVisitors').html(visitorsHtml);
+
+                    }
+                );
+	}
+	</script>

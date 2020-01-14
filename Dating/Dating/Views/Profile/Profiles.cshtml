@@ -1,0 +1,63 @@
+﻿@model IEnumerable<Dating.Common.Models.Profile>
+@using Microsoft.AspNet.Identity
+@using Dating.Controllers
+@{
+	ViewBag.Title = "Profiles";
+
+}
+<div class="row">
+	<div class="col-lg-3">
+		<h2>
+			Users
+		</h2>
+	</div>
+</div>
+
+
+<table class="table">
+	<tr>
+		<th>
+
+		</th>
+		<th>
+			Username
+		</th>
+		<th>
+			First name
+		</th>
+		<th>
+			Last name
+		</th>
+		<th>
+			Birth date
+		</th>
+		<th></th>
+	</tr>
+	@foreach (var profile in Model)
+	{
+		<tr>
+			<td>
+				@if (profile.ImagePath != null)
+				{
+					<img id="image_preview" type="image" src="@profile.ImagePath" style="height:50px;width:50px; border-radius: 50%; outline: none;" alt="MyProfilePhoto">
+				}
+				else
+				{
+					<img id="image_preview" type="image" src="~/Content/Images/imageUndefined.png" style="height:50px;width:50px; border-radius: 50%; outline: none;" alt="MyProfilePhoto">
+				}
+			</td>
+			<td>@profile.UserName</td>
+			<td>@profile.FirstName</td>
+			<td>@profile.LastName</td>
+			<td>@profile.BirthDate.ToShortDateString()</td>
+			<td>
+				@Html.ActionLink("View Profile", "ViewProfile", new { profileId = profile.Id })
+			</td>
+		</tr>
+	}
+
+</table>
+
+
+
+@Scripts.Render("~/bundles/jquery")

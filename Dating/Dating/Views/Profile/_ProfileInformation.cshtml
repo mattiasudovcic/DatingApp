@@ -1,0 +1,209 @@
+﻿@model Dating.Common.Models.Profile
+@using Microsoft.AspNet.Identity
+@using Dating.Controllers
+@using Dating.Helpers;
+@{
+	ViewBag.Title = "MyProfile";
+	DateTime zeroTime = new DateTime(1, 1, 1);
+	DateTime today = DateTime.Now;
+	var span = today - Model.BirthDate;
+	int years = (zeroTime + span).Year - 1;
+}
+
+<div class="row">
+	<div class="row jumbotron">
+		<div class="col-lg-4">
+
+			@using (Html.BeginForm("UpdateProfilePicture", "Profile", FormMethod.Post, new { enctype = "multipart/form-data", @id = "UpdateProfilePictureForm" }))
+			{
+
+
+				if (User.Identity.GetUserId() == Model.UserId.ToString())
+				{
+					if (Model.ImagePath != null)
+					{
+						<input id="image_preview" type="image" src="@Model.ImagePath" style="height:200px;width:200px; border-radius: 50%; outline: none;" alt="MyProfilePhoto">
+
+					}
+					else
+					{
+						<input id="image_preview" type="image" src="~/Content/Images/imageUndefined.png" style="height:200px;width:200px; outline: none;" alt="MyProfilePhoto">
+					}
+
+					<input type="file" id="imageFile" name="imageFile" style="display:none" accept="image/jpeg, image/png" />
+
+					<div class="form-group">
+						<div class="col-md-offset-2 col-md-10">
+
+							<input type="submit" value="submit" class="btn btn-sm btn-primary" style="display:none" />
+						</div>
+					</div>
+				}
+				else
+				{
+					if (Model.ImagePath != null)
+					{
+						<img id="image_preview" type="image" src="@Model.ImagePath" style="height:200px;width:200px; border-radius: 50%; outline: none;" alt="MyProfilePhoto">
+
+					}
+					else
+					{
+						<img id="image_preview" type="image" src="~/Content/Images/imageUndefined.png" style="height:200px;width:200px; outline: none;" alt="MyProfilePhoto">
+					}
+				}
+			}
+		</div>
+		<div class="col-lg-6">
+			<div class="row">
+
+				<div class="col-lg-4">
+					<h2>@Html.DisplayFor(model => model.UserName)</h2>
+				</div>
+			</div>
+			<div class="row">
+
+
+				<div class="col-lg-4"><h4>First name: </h4>@Html.DisplayFor(model => model.FirstName)</div>
+				<div class="col-lg-4"><h4>Last name:</h4> @Html.DisplayFor(model => model.LastName)</div>
+
+
+			</div>
+			<div class="row">
+
+				<div class="col-lg-4"><h4>Username:</h4> @Html.DisplayFor(model => model.UserName)</div>
+				<div class="col-lg-4"><h4>Age: </h4>@years</div>
+
+
+			</div>
+
+		</div>
+		<div class="col-lg-7"></div>
+		<div class="row">
+			<div class="col-lg-3" style="float:right">
+				@if (User.Identity.GetUserId() == Model.UserId.ToString())
+				{
+
+					@Html.ActionLink("Edit profile", "Edit", "Profile", routeValues: null, htmlAttributes: new { id = "registerLink", @class = "btn btn-sm btn-primary" })
+					<div class="col-lg-1"></div>
+					if (Model.Active)
+					{
+						@Html.ActionLink("Deactive account", "DisableAccount", "Profile", routeValues: null, htmlAttributes: new { id = "disableAccountLink", @class = "btn btn-sm btn-danger" })
+					}
+					else
+					{
+						@Html.ActionLink("Active account", "ActiveAccount", "Profile", routeValues: null, htmlAttributes: new { id = "activeAccountLink", @class = "btn btn-sm btn-warning" })
+					}
+				}
+				else
+				{
+					if (ViewBag.IsFriend)
+					{
+						<div class="alert alert-success" role="alert">
+							Already friends
+						</div>
+					}
+					else if (ViewBag.PendingFriend)
+					{
+						<div class="alert alert-warning" role="alert">
+							Pending friend request
+						</div>
+					}
+					else
+					{
+						<button type="button" id="btnAddFriend" class="btn btn-primary">Add friend</button>
+					}
+
+					<button type="button" id="btnMatch" class="btn btn-danger">Do we fit together?</button>
+				}
+			</div>
+		</div>
+	</div>
+
+</div>
+<div class="modal fade" id="modalMatch" tabindex="-1" role="dialog" aria-labelledby="modalMatchLabel" aria-hidden="true">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h4 class="modal-title" id="modalMatchLabel">Match</h4>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body" id="msgModal">
+
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+@Scripts.Render("~/bundles/jquery")
+
+<script type="text/javascript">
+
+
+	var urlAddFriend = '@Html.Raw(ActionHelper.ADD_FRIEND)';
+	var urlIsMatch = '@Html.Raw(Url.Action(ActionHelper.IS_MATCH, "Match"))';
+	var requestAddFriendRunning = false;
+	$("input[type='image']").click(function (e) {
+		e.preventDefault();
+		$("input[id='imageFile']").click();
+
+	});
+
+	$("#imageFile").change(function () {
+
+		$('#UpdateProfilePictureForm').submit();
+	});
+
+
+	$('#btnAddFriend').click(function (e) {
+		e.preventDefault();
+		if (requestAddFriendRunning) return;
+
+		var friendsId = "@Model.UserId";
+
+		requestAddFriendRunning = true;
+
+
+            $.get(
+                    urlAddFriend
+                    + friendsId,
+				function () {
+					requestAddFriendRunning = false;
+                        window.location.reload();
+                    }
+		);
+		
+	});
+
+
+	$('#btnMatch').click(function (e) {
+		e.preventDefault();
+		$.datingLibs_executeAjax(urlIsMatch, 'POST', null, 'application/x-www-form-urlencoded; charset=UTF-8', true, showResultMatch, getFriendData);
+	});
+
+	function getFriendData() {
+		return { friendProfileId: '@Model.Id' };
+	}
+
+	function showResultMatch(data) {
+		
+		if (data != null && data)
+			$('#msgModal').html("Is Match!! :)");
+		else
+			$('#msgModal').html("No Match!! :(");
+
+		$.datingLibs_showModal('#modalMatch');
+	}
+
+	function reloadPage() {
+		setTimeout(function(){
+			window.location.reload();
+		},500);
+	}
+
+
+</script>

@@ -1,0 +1,64 @@
+﻿
+@model IEnumerable<Dating.Models.UserViewModel>
+@using Dating.Helpers;
+@using Dating.Controllers
+@{
+	ViewBag.Title = "Home Page";
+}
+
+
+
+<div class="row">
+
+	<div class="col-md-4">
+
+		<h3>Recent Logins</h3>
+		@if (Model.Count() >0)
+		{
+			<h4>Click your picture.</h4>
+		}
+	</div>
+	
+</div>
+<div class="row">
+	<div class="col-md-8">
+		@{
+			foreach (var user in Model)
+			{
+				
+				<div class="col-md-2">
+					@if (user.ImagePath != null)
+					{
+
+
+						<img id="image_preview" type="image" src="@user.ImagePath" class="img-thumbnail" alt="pictureProfile@("_" + user.UserName)" style="height:100px;width:100px; border-radius: 50%;" onclick="redirectToLogin('@user.Email', '@user.ProfileId')">
+
+					}
+					else
+					{
+						<img id="image_preview" type="image" src="~/Content/Images/imageUndefined.png" class="img-thumbnail"  style="height:100px;width:100px; border-radius: 50%;"  alt="pictureProfile@("_" + user.UserName)" onclick="redirectToLogin('@user.Email', '@user.ProfileId')">
+					}
+					<h3 style="text-align:center">@user.UserName</h3>
+
+
+				</div>
+				
+			}
+		}
+	</div>
+	
+</div>
+
+
+@section scripts{
+	<script>
+
+		var urlLogin = '@Html.Raw(Url.Action(ActionHelper.LOGIN, "Account"))';
+		function redirectToLogin(email, profileId) {
+			debugger;
+			var urlMyProfile = '@Html.Raw(Url.Action(ActionHelper.VIEW_PROFILE, "Profile"))' + "?profileId=" + profileId;
+			window.location.href = urlLogin + "?email=" + email + "&&returnUrl=" + urlMyProfile;
+		}
+
+	</script>
+}

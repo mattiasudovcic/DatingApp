@@ -1,0 +1,55 @@
+﻿@using Microsoft.AspNet.Identity
+@if (Request.IsAuthenticated)
+{
+	using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm", @class = "navbar-right" }))
+	{
+		@Html.AntiForgeryToken()
+
+
+		<ul class="nav navbar-nav navbar-right">
+			<li>
+				@Html.ActionLink("Hello " + User.Identity.GetUserName() + "!", "MyProfile", "Profile")
+			</li>
+			<li><a href="javascript:document.getElementById('logoutForm').submit()">Log off</a></li>
+		</ul>
+		if (User.IsInRole("Admin"))
+		{
+			<ul class="nav navbar-nav navbar-right">
+				<li class="nav-item">
+					<a class="nav-link" href="@Url.Action("ExportProfiles", "Xml")"><i class="fa fa-2x fa-download"></i></a>
+				</li>
+			</ul>
+		}
+		else
+		{
+
+			<ul class="nav navbar-nav navbar-right">
+				<li class="nav-item">
+					<a class="nav-link" href="@Url.Action("Index", "Match")">
+						<span style="font-size:14px">Find a suitable partner <i class="fa fa-2x fa-heart"></i></span>
+
+					</a>
+				</li>
+				<li class="nav-item">
+					<span id="notificationCount" class="badge badge-pill badge-danger" style="float:right;margin-bottom:-10px;">@Html.Action("CountFriendRequests", "Profile")</span> <!-- your badge -->
+					<a class="nav-link" href="@Url.Action("FriendRequests", "Profile")"><i class="fa fa-2x fa-users"></i> <span class="sr-only">(current)</span></a>
+				</li>
+			</ul>
+			<div class="nav navbar-nav navbar-left form-inline" style="padding-top:15px">
+				<form id="searchUsersForm" class="form-inline">
+					<input class="form-control" type="search" id="searchString" placeholder="User search" aria-label="Search">
+					<button class="btn btn-outline-success" id="btnSearchUser" type="button">Search</button>
+				</form>
+			</div>
+
+		}
+	}
+}
+else
+{
+	<ul class="nav navbar-nav navbar-right">
+
+		<li>@Html.ActionLink("Register", "Register", "Account", routeValues: null, htmlAttributes: new { id = "registerLink" })</li>
+		<li>@Html.ActionLink("Log in", "Login", "Account", routeValues: null, htmlAttributes: new { id = "loginLink" })</li>
+	</ul>
+}

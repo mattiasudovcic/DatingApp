@@ -1,0 +1,101 @@
+﻿@model IEnumerable<Dating.Common.Models.FriendProfile>
+@using Microsoft.AspNet.Identity
+@using Dating.Controllers
+@using Dating.Helpers;
+@{
+	ViewBag.Title = "Friends";
+
+}
+<div class="row">
+	<div class="col-lg-3">
+		<h2>
+			@ViewBag.Title
+		</h2>
+	</div>
+</div>
+
+
+<table class="table">
+	<tr>
+		<th>
+
+		</th>
+		<th>
+			Username
+		</th>
+		<th>
+			First name
+		</th>
+		<th>
+			Last name
+		</th>
+		<th>
+			Birth date
+		</th>
+		<th>Is favourite</th>
+		<th></th>
+		<th></th>
+	</tr>
+	@foreach (var friendProfile in Model)
+	{
+		<tr>
+			<td>
+				@if (friendProfile.FriendUserProfile.ImagePath != null)
+				{
+					<img id="image_preview" type="image" src="@friendProfile.FriendUserProfile.ImagePath" style="height:50px;width:50px; border-radius: 50%; outline: none;" alt="MyProfilePhoto">
+				}
+				else
+				{
+					<img id="image_preview" type="image" src="~/Content/Images/imageUndefined.png" style="height:50px;width:50px; border-radius: 50%; outline: none;" alt="MyProfilePhoto">
+				}
+			</td>
+			<td>@friendProfile.FriendUserProfile.UserName</td>
+			<td>@friendProfile.FriendUserProfile.FirstName</td>
+			<td>@friendProfile.FriendUserProfile.LastName</td>
+			<td>@friendProfile.FriendUserProfile.BirthDate.ToShortDateString()</td>
+			<td>@(friendProfile.IsFavourite ? "Yes" : "No")</td>
+			<td>
+				@Html.ActionLink("View Profile", "ViewProfile", "Profile", new { profileId = friendProfile.FriendUserProfile.Id }, new { @class = "btn btn-primary" })
+			</td>
+			<td>
+				@if (!friendProfile.IsFavourite)
+				{
+					<input type="button" class="btn btn-primary" value="Add Favourite" onClick="addFavourite('@friendProfile.Id')" />
+				}
+				else
+				{
+					<input type="button" class="btn btn-warning" value="Remove Favourite" onClick="removeFavourite( '@friendProfile.Id' )" />
+				}
+			</td>
+		</tr>
+	}
+
+</table>
+
+
+
+@Scripts.Render("~/bundles/jquery")
+<script type="text/javascript">
+
+	var urlAddFavourite = '@Html.Raw(Url.Action(ActionHelper.ADD_FAVOURITE,"Friend"))';
+	var urlRemoveFavourite = '@Html.Raw(Url.Action(ActionHelper.REMOVE_FAVOURITE,"Friend"))';
+	var friendProfileIdData = null;
+	function addFavourite(friendProfileId) {
+		
+		friendProfileIdData = friendProfileId;
+		$.datingLibs_executeAjax(urlAddFavourite, 'GET', null , 'application/x-www-form-urlencoded; charset=UTF-8', true, reloadFriends, getFriendData);
+	};
+
+	function removeFavourite(friendProfileId) {
+		friendProfileIdData = friendProfileId;
+		$.datingLibs_executeAjax(urlRemoveFavourite, 'GET',  null, 'application/x-www-form-urlencoded; charset=UTF-8', true, reloadFriends, getFriendData);
+	};
+
+	function getFriendData() {
+		return {friendProfileId: friendProfileIdData  };
+	}
+	function reloadFriends() {
+		
+		window.location.reload();
+	}
+</script>

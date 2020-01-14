@@ -1,0 +1,215 @@
+﻿@model Dating.Common.Models.Profile
+@using Dating.Helpers;
+@using Newtonsoft.Json;
+@using Dating.Common.Enums;
+@{
+	ViewBag.Title = "Index";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+
+}
+
+
+<form id="createProfileForm">
+	@Html.AntiForgeryToken()
+
+	<div class="form-profile">
+		<h4>Create a Shokanso profile to continue</h4>
+		<hr />
+		@Html.ValidationSummary(true, "", new { @class = "text-danger" })
+		<div class="col col-lg-4">
+			<div class="form-group">
+				@Html.Label("Username", new { @class = "control-label col-md-6" })
+				<div class="col-md-10">
+					@Html.EditorFor(model => model.UserName, new { htmlAttributes = new { @class = "form-control" } })
+					@Html.ValidationMessageFor(model => model.UserName, "", new { @class = "text-danger" })
+				</div>
+			</div>
+
+			<div class="form-group">
+				@Html.Label("First name", new { @class = "control-label col-md-6" })
+				<div class="col-md-10">
+					@Html.EditorFor(model => model.FirstName, new { htmlAttributes = new { @class = "form-control" } })
+					@Html.ValidationMessageFor(model => model.FirstName, "", new { @class = "text-danger" })
+				</div>
+			</div>
+
+			<div class="form-group">
+				@Html.Label("Last name", new { @class = "control-label col-md-6" })
+				<div class="col-md-10">
+					@Html.EditorFor(model => model.LastName, new { htmlAttributes = new { @class = "form-control" } })
+					@Html.ValidationMessageFor(model => model.LastName, "", new { @class = "text-danger" })
+				</div>
+			</div>
+
+			<div class="form-group">
+				@Html.Label("Birth date", htmlAttributes: new { @class = "control-label col-md-6" })
+				<div class="col-md-10">
+					@Html.EditorFor(model => model.BirthDate, new { htmlAttributes = new { @class = "form-control" } })
+					@Html.ValidationMessageFor(model => model.BirthDate, "", new { @class = "text-danger" })
+				</div>
+			</div>
+
+		</div>
+
+		<div class="col col-lg-4">
+			<div class="form-group">
+				@Html.Label("Minium target age", htmlAttributes: new { @class = "control-label col-md-7" })
+				<div class="col-md-10">
+					@Html.EditorFor(model => model.MinTargetAge, new { htmlAttributes = new { @class = "form-control", min = 18 } })
+					@Html.ValidationMessageFor(model => model.MinTargetAge, "", new { @class = "text-danger" })
+				</div>
+			</div>
+			<div class="form-group">
+				@Html.Label("Maxium target age", htmlAttributes: new { @class = "control-label col-md-7" })
+				<div class="col-md-10">
+					@Html.EditorFor(model => model.MaxTargetAge, new { htmlAttributes = new { @class = "form-control", min = 18, max = 100 } })
+					@Html.ValidationMessageFor(model => model.MaxTargetAge, "", new { @class = "text-danger" })
+				</div>
+			</div>
+			<div class="form-group">
+				@Html.Label("Gender", new { @class = "control-label col-md-6" })
+				<div class="col-md-10">
+					@Html.DropDownList("Gender",
+								(SelectList)ViewBag.Genders,
+					new { @class = "form-control" })
+				</div>
+			</div>
+			<div class="form-group">
+				@Html.Label("Sexual orientation", new { @class = "control-label col-md-7" })
+				<div class="col-md-10">
+					@Html.DropDownList("SexualOrientation",
+									(SelectList)ViewBag.SexualOrientations,
+					new { @class = "form-control" })
+				</div>
+			</div>
+
+
+		</div>
+		<div class="col col-lg-4">
+			<div class="form-group">
+				<div class="row">
+					@Html.Label("Hobbies", htmlAttributes: new { @class = "control-label col-md-6" })
+				</div>
+				<div class="col-lg-10" style="overflow-y:scroll; max-height:300px">
+					<div id="check-list-box-hobbies">
+					</div>
+					<div><input name="CheckListBoxHobbies" style="display:none" /></div>
+				</div>
+
+			</div>
+		</div>
+
+	</div>
+	
+	<div class="row" style="padding-top:35% !important">
+		<div class="col col-md-10"><div id="errorMessages" style="display:none" class="alert alert-warning" role="alert"></div></div>
+		<div class="col col-md-2"><input id="btnSubmitProfile" type="button" value="Create" class="btn btn-primary" /></div>
+
+
+	</div>
+</form>
+
+
+
+@section scripts {
+	<script type="text/javascript">
+		
+
+        $("#Entity_DropdownCategory").change(function () {
+                loadPriority();
+
+        });
+
+		var urlHobbies = '@Html.Raw(Url.Action(ActionHelper.GET_JSON_LIST_CHECK_BOX_HOBBIES, "Hobbie"))';
+		var urlCreateProfile = '@Html.Raw(Url.Action(ActionHelper.CREATE_PROFILE, "Profile"))';
+		var urlMyProfile = '@Html.Raw(Url.Action(ActionHelper.MY_PROFILE, "Profile"))';
+		var urlValidateProfile = '@Html.Raw(Url.Action(ActionHelper.VALIDATE_PROFILE, "Profile"))';
+
+		$('#SexualOrientation').val(@Model.SexualOrientationId);
+		$('#Gender').val(@Model.GenderId);
+
+		var date = new Date();
+		date.setFullYear(date.getFullYear() - 18);
+
+		$.datingLibs_setDatePicker("#BirthDate", null, null, date, "");
+
+		$.datingLibs_fillListCheckBox("#check-list-box-hobbies", urlHobbies, null, validateSelectedHobbies, null, null);
+		var jsonHobbies = @Html.Raw(Json.Encode(ViewBag.Hobbies));
+		function validateSelectedHobbies(id) {
+
+			var selected = false;
+
+			$.each(jsonHobbies, function (key, value) {
+				if (value["HobbieId"] == id)
+					selected = true;
+			});
+
+			return selected;
+		}
+
+		function getFormData() {
+
+			var model = {};
+			var form = $('#createProfileForm');
+			var token = $('input[name="__RequestVerificationToken"]', form).val();
+			model.__RequestVerificationToken = token;
+			model.Hobbies = [];
+			model.UserName = $('#UserName').val();
+			model.FirstName = $('#FirstName').val();
+			model.LastName = $('#LastName').val();
+			model.BirthDate = $('#BirthDate').val();
+			model.GenderId = $('#Gender').val();
+			model.SexualOrientationId = $('#SexualOrientation').val();
+			model.MinTargetAge = $('#MinTargetAge').val();
+			model.MaxTargetAge = $('#MaxTargetAge').val();
+			$("#check-list-box-hobbies :checked").each(function (idx, li) {
+
+				model['Hobbies'].push({ Id: getProfileHobbieId($(li).val()), HobbieId: $(li).val(), ProfileId: $('#Id').val() });
+
+			});
+			return model;
+		}
+
+		function getProfileHobbieId(hobbieId) {
+
+			var profileHobbieId;
+			$.each(jsonHobbies, function (key, value) {
+				if (value['HobbieId'] == hobbieId)
+					profileHobbieId = value['Id'];
+			});
+
+			return profileHobbieId;
+		}
+
+
+			$('#btnSubmitProfile').click(function (e) {
+				e.preventDefault();
+				$.datingLibs_executeAjax(urlValidateProfile, 'POST', null, 'application/x-www-form-urlencoded; charset=UTF-8', true, showErrorMessages,getFormData);
+				
+			});
+
+		function showErrorMessages(data) {
+			debugger;
+			if (data == null || data.length == 0) {
+				$('#errorMessages').hide();
+				if($('#createProfileForm').valid())
+					$.datingLibs_executeAjax(urlCreateProfile, 'POST', null, 'application/x-www-form-urlencoded; charset=UTF-8', true, redirectToMyProfile, getFormData);
+			} else {
+				var htmlErrorMessages = "";
+				data.forEach(function (v, i) {
+					var row = "<div class=\"row\">" + v + "</div>";
+					htmlErrorMessages += row;
+				});
+				$('#errorMessages').html(htmlErrorMessages);
+				$('#errorMessages').show();
+			}
+		}
+
+		function redirectToMyProfile() {
+
+			window.location.href = urlMyProfile;
+		}
+
+
+	</script>
+}

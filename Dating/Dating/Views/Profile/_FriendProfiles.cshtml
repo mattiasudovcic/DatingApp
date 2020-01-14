@@ -1,0 +1,63 @@
+﻿@model List<Dating.Common.Models.FriendProfile>
+@using Microsoft.AspNet.Identity
+@using Dating.Controllers
+
+@using Dating.Helpers;
+@{
+	ViewBag.Title = "Favourite Friends";
+}
+
+	<div class="row">
+		<div class="row jumbotron">
+			<h3>@ViewBag.Title</h3>
+			<div class="col-lg-12" style="overflow-y: scroll; max-height: 400px">
+
+				@{
+
+
+					foreach (var friend in Model)
+					{
+
+						<div class="row">
+							<div class="col-lg-12">
+								@if (friend.FriendUserProfile.ImagePath != null)
+								{
+
+									<div class="form-group" style="float:left">
+										<img id="image_preview" type="image" src="@friend.FriendUserProfile.ImagePath" style="height:50px;width:50px;border-radius: 50%; outline: none; margin-right:3px" alt="MyProfilePhoto">
+										<div style="float:right;padding-top: 10%;">
+											@Html.ActionLink(friend.FriendUserProfile.FirstName + " " + friend.FriendUserProfile.LastName, "ViewProfile", new { @profileId = friend.FriendUserProfile.Id })
+										</div>
+									</div>
+								}
+								else
+								{
+									<div class="form-group" style="float:left">
+										<img id="image_preview" type="image" src="~/Content/Images/imageUndefined.png" style="height:50px;width:50px;border-radius: 50%; outline: none; margin-right:3px" alt="MyProfilePhoto">
+										<div style="float:right;padding-top: 10%;">
+											@Html.ActionLink(friend.FriendUserProfile.FirstName + " " + friend.FriendUserProfile.LastName, "ViewProfile", new { @profileId = friend.FriendUserProfile.Id })
+										</div>
+									</div>
+								}
+							</div>
+
+						</div>
+
+
+					}
+
+
+				}
+			</div>
+			@Html.ActionLink("All friends", "Index", "Friend", null ,new { @class = "btn btn-primary"  })
+		</div>
+		
+
+	</div>
+
+
+@Scripts.Render("~/bundles/jquery")
+
+<script type="text/javascript">
+
+</script>

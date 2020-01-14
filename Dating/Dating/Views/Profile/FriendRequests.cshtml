@@ -1,0 +1,101 @@
+﻿@model IEnumerable<Dating.Common.Models.FriendRequest>
+@using Dating.Controllers
+@using Dating.Helpers;
+@{
+	ViewBag.Title = "Friend Requests";
+}
+
+<h2>Friend requests</h2>
+<div id="friendRequests">
+	<table class="table">
+		<tr>
+			<th>
+
+			</th>
+			<th>
+				Username
+			</th>
+			<th>
+				First name
+			</th>
+			<th>
+				Last name
+			</th>
+			<th></th>
+		</tr>
+		@foreach (var item in Model)
+		{
+			<tr>
+				<td>
+					@if (item.Profile.ImagePath != null)
+					{
+						<img id="image_preview" type="image" src="@item.Profile.ImagePath" style="height:50px;width:50px; border-radius: 50%; outline: none;" alt="MyProfilePhoto">
+					}
+					else
+					{
+						<img id="image_preview" type="image" src="~/Content/Images/imageUndefined.png" style="height:50px;width:50px; border-radius: 50%; outline: none;" alt="MyProfilePhoto">
+					}
+				</td>
+				<td>
+					@Html.ActionLink(item.Profile.UserName, "ViewProfile", new { profileId = item.ProfileId })
+				</td>
+				<td>
+					@Html.ActionLink(item.Profile.FirstName, "ViewProfile", new { profileId = item.ProfileId })
+				</td>
+				<td>
+					@Html.ActionLink(item.Profile.LastName, "ViewProfile", new { profileId = item.ProfileId })
+				</td>
+				<td>
+					<a href="#" onclick="return acceptFriend('@item.Id')"> Accept </a>				|
+					<a href="#" onclick="return declineFriend('@item.Id')"> Decline </a>
+				</td>
+			</tr>
+		}
+	</table>
+</div>
+@if (Model.Count() < 1)
+{
+	<h4>You have no pending friend requests.</h4>
+}
+
+<script type="text/javascript">
+	var urlAcceptFriend = '@Html.Raw(ActionHelper.ACCEPT_FRIEND)';
+	var urlDeclineFriend = '@Html.Raw(ActionHelper.DECLINE_FRIEND)';
+	var requestAcceptFriendRunning = false;
+	var requestDeclineFriendRunning = false;
+
+	function acceptFriend(id) {
+		if (requestAcceptFriendRunning)
+			return;
+		requestRemovePostRunning = true; 
+		$.get(
+			urlAcceptFriend
+			+ id,
+			function () {
+				requestRemovePostRunning = false;
+				window.location.reload();
+				$("#friendRequests").load(window.location.href + " #friendRequests");
+				
+			}
+		);
+		return false;
+	}
+
+	function declineFriend(id) {
+		if (requestDeclineFriendRunning)
+			return;
+		requestDeclineFriendRunning = true;
+		$.get(
+			urlDeclineFriend
+			+ id,
+			function () {
+				requestDeclineFriendRunning = false;
+				window.location.reload();
+				$("#friendRequests").load(window.location.href + " #friendRequests");
+				
+			}
+			
+		);
+		return false;
+	}
+</script>
